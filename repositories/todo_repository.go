@@ -3,21 +3,14 @@
 package repositories
 
 import (
+	"RegionLabTZ/helpers"
 	"RegionLabTZ/models"
 	"context"
-	"errors"
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-)
-
-var (
-	ErrTodoExists          = errors.New("Задача с таким заголовком и датой уже существует")
-	ErrNotFound            = errors.New("Запись не найдена")
-	ErrFailedToGetRecordID = errors.New("Не удалось получить идентификатор записи")
+	"time"
 )
 
 type TodoRepository interface {
@@ -77,7 +70,7 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 	}
 
 	if count > 0 {
-		return nil, ErrTodoExists
+		return nil, helpers.ErrTodoExists
 	}
 
 	// Добавление новой задачи в базу данных
@@ -91,7 +84,7 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 
 	insertedID, ok := result.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, ErrFailedToGetRecordID
+		return nil, helpers.ErrFailedToGetRecordID
 	}
 
 	todo.ID = insertedID
@@ -122,7 +115,7 @@ func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo
 	}
 
 	if count > 0 {
-		return nil, ErrNotFound
+		return nil, helpers.ErrNotFound
 	}
 
 	// Обновление задачи в базе данных
@@ -217,7 +210,7 @@ func (r *repository) GetTaskByID(ctx context.Context, id primitive.ObjectID) (*m
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&todo)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, ErrNotFound
+			return nil, helpers.ErrNotFound
 		}
 		return nil, err
 	}

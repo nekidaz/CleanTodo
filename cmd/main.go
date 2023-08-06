@@ -38,9 +38,9 @@ func main() {
 	r.DELETE("/api/todo-list/tasks/:ID", todoController.DeleteTodoHandler)
 
 	r.PUT("/api/todo-list/tasks/:ID", todoController.UpdateTodoHandler)
-	r.PUT("/api/todo-list/tasks/:ID/done", todoController.MarkAsCompletedHandler)
+	//тут патч подходит лучше так как меняем 1 поле
 
-	// Запуск сервера
-	log.Println("Server started on port 8080")
+	r.PATCH("/api/todo-list/tasks/:ID/done", todoController.MarkAsCompletedHandler)
+
 	r.Run(":8080")
 }

@@ -3,7 +3,8 @@
 package controllers
 
 import (
-	"RegionLabTZ/repositories"
+	"RegionLabTZ/helpers"
+	"RegionLabTZ/models"
 	service "RegionLabTZ/services"
 	"errors"
 	"net/http"
@@ -38,19 +39,21 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 	// Преобразовываем строку ActiveAt в формат времени time.Time
 	activeAtTime, err := time.Parse("2006-01-02", requestBody.ActiveAt)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse ActiveAt"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrParseActiveAt})
 		return
 	}
 
 	// Создаем новую задачу через сервис
 	todo, err := c.todoService.CreateNewTodo(ctx, requestBody.Title, activeAtTime)
+
 	if err != nil {
 		switch {
-		case errors.Is(err, repositories.ErrTodoExists):
+		case errors.Is(err, helpers.ErrTodoExists):
 			ctx.Status(http.StatusNoContent)
 		default:
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
+
 		return
 	}
 
@@ -58,24 +61,9 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 }
 
 func (c *TodoController) UpdateTodoHandler(ctx *gin.Context) {
-	idStr := ctx.Param("ID")
-	id, err := strconv.Atoi(idStr)
 
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
-	}
-
-	id = id - 1
-
-	tasks, err := c.todoService.GetAllTasks(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if id < 0 || id >= len(tasks) {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
+	id, tasks, errReturned := c.processRequestID(ctx)
+	if errReturned {
 		return
 	}
 
@@ -91,7 +79,7 @@ func (c *TodoController) UpdateTodoHandler(ctx *gin.Context) {
 
 	activeAtTime, err := time.Parse("2006-01-02", requestBody.ActiveAt)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Failed to parse ActiveAt"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrParseActiveAt})
 		return
 	}
 
@@ -105,28 +93,13 @@ func (c *TodoController) UpdateTodoHandler(ctx *gin.Context) {
 }
 
 func (c *TodoController) DeleteTodoHandler(ctx *gin.Context) {
-	idStr := ctx.Param("ID")
-	id, err := strconv.Atoi(idStr)
+	id, tasks, errReturned := c.processRequestID(ctx)
 
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	if errReturned {
 		return
 	}
 
-	id = id - 1
-
-	tasks, err := c.todoService.GetAllTasks(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if id < 0 || id >= len(tasks) {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-		return
-	}
-
-	err = c.todoService.DeleteTodo(ctx, tasks[id].ID)
+	err := c.todoService.DeleteTodo(ctx, tasks[id].ID)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -137,29 +110,13 @@ func (c *TodoController) DeleteTodoHandler(ctx *gin.Context) {
 }
 
 func (c *TodoController) MarkAsCompletedHandler(ctx *gin.Context) {
-	idStr := ctx.Param("ID")
-	id, err := strconv.Atoi(idStr)
-
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+	id, tasks, errReturned := c.processRequestID(ctx)
+	if errReturned {
 		return
 	}
 
-	id = id - 1
+	err := c.todoService.MarkAsCompleted(ctx, tasks[id].ID)
 
-	tasks, err := c.todoService.GetAllTasks(ctx)
-
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if id < 0 || id >= len(tasks) {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-		return
-	}
-
-	err = c.todoService.MarkAsCompleted(ctx, tasks[id].ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -182,26 +139,34 @@ func (c *TodoController) GetAllTask(ctx *gin.Context) {
 
 func (c *TodoController) GetTaskByID(ctx *gin.Context) {
 	// Получаем ID задачи из параметра в URL
+	id, tasks, errReturned := c.processRequestID(ctx)
+	if errReturned {
+		return
+	}
+	ctx.JSON(http.StatusOK, tasks[id])
+}
+
+func (c *TodoController) processRequestID(ctx *gin.Context) (id int, tasks []*models.Todo, errReturned bool) {
 	idStr := ctx.Param("ID")
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
+		defer ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrInvalidID})
+		return 0, nil, true
 	}
 
 	id = id - 1
 
-	tasks, err := c.todoService.GetAllTasks(ctx)
+	tasks, err = c.todoService.GetAllTasks(ctx)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		defer ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return 0, nil, true
 	}
 
 	if id < 0 || id >= len(tasks) {
-		ctx.JSON(http.StatusNotFound, gin.H{"error": "Task not found"})
-		return
+		defer ctx.JSON(http.StatusNotFound, gin.H{"error": helpers.ErrTaskNotFound})
+		return 0, nil, true
 	}
 
-	ctx.JSON(http.StatusOK, tasks[id])
+	return id, tasks, false
 }

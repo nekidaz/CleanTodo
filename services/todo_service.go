@@ -15,9 +15,7 @@ type TodoService interface {
 	UpdateTodo(ctx context.Context, id primitive.ObjectID, title string, activeAt time.Time) (*models.Todo, error)
 	DeleteTodo(ctx context.Context, id primitive.ObjectID) error
 	MarkAsCompleted(ctx context.Context, id primitive.ObjectID) error
-	GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error)
 	GetAllTasks(ctx context.Context) ([]*models.Todo, error)
-	GetTaskByID(ctx context.Context, id primitive.ObjectID) (*models.Todo, error)
 }
 
 type todoService struct {
@@ -48,14 +46,6 @@ func (s *todoService) MarkAsCompleted(ctx context.Context, id primitive.ObjectID
 	return s.repo.MarkAsCompleted(ctx, id)
 }
 
-func (s *todoService) GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error) {
-	return s.repo.GetTasksByStatus(ctx, status)
-}
-
 func (s *todoService) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
 	return s.repo.GetAllTasks(ctx)
-}
-
-func (s *todoService) GetTaskByID(ctx context.Context, id primitive.ObjectID) (*models.Todo, error) {
-	return s.repo.GetTaskByID(ctx, id)
 }

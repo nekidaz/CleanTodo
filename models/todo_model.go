@@ -3,7 +3,7 @@
 package models
 
 import (
-	"errors"
+	"RegionLabTZ/helpers"
 	"strings"
 	"time"
 
@@ -36,17 +36,17 @@ func (t *Todo) MarkAsCompleted() {
 
 func (t *Todo) Validate() error {
 	if t.Title == "" {
-		return errors.New("Заголовок не может быть пустым")
+		return helpers.ErrTitleEmpty
 	}
 
 	t.Title = strings.ReplaceAll(t.Title, " ", "")
 	if len(t.Title) > 200 {
-		return errors.New("Длина заголовка не может превышать 200 символов")
+		return helpers.ErrTitleLengthExceeded
 	}
 	today := time.Now().Truncate(24 * time.Hour) // Обрезаем время, оставляя только дату
 
 	if t.ActiveAt.Before(today) {
-		return errors.New("Дата должна быть актуальной и не раньше текущей даты")
+		return helpers.ErrDateNotCurrent
 	}
 	return nil
 }
