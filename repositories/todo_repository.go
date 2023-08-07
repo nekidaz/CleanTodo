@@ -6,6 +6,7 @@ import (
 	"RegionLabTZ/helpers"
 	"RegionLabTZ/models"
 	"context"
+	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -64,6 +65,7 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 		{"title", todo.Title},
 		{"active_at", todo.ActiveAt},
 	}
+
 	count, err := r.collection.CountDocuments(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -177,28 +179,31 @@ func (r *repository) MarkAsCompleted(ctx context.Context, id primitive.ObjectID)
 }
 
 func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error) {
-	// Определяем фильтр по статусу
+	now := time.Now()
+	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
+
 	var filter bson.M
 	if status == "done" {
 		filter = bson.M{"completed": true}
 	} else {
-		filter = bson.M{"completed": false, "active_at": bson.M{"$lte": time.Now()}}
+		// Get tasks that are not completed and have activeAt <= today
+		filter = bson.M{"completed": false, "active_at": bson.M{"$lte": today}}
 	}
 
-	// Получаем список задач по фильтру
-	cursor, err := r.collection.Find(ctx, filter, options.Find().SetSort(bson.M{"created_at": 1}))
+	cursor, err := r.collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
 	var todos []*models.Todo
-	for cursor.Next(ctx) {
-		var todo models.Todo
-		if err := cursor.Decode(&todo); err != nil {
-			return nil, err
-		}
-		todos = append(todos, &todo)
+	if err = cursor.All(ctx, &todos); err != nil {
+		return nil, err
+	}
+
+	// Print the tasks to check them.
+	for _, todo := range todos {
+		fmt.Printf("Fetched task: %+v\n", todo)
 	}
 
 	return todos, nil

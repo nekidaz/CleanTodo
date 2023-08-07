@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  title: RegionLabTZ
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/
+paths:
+  /api/todo-list/tasks/{id}:
+    get:
+      tags:
+        - default
+      summary: GetTaskByID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+    delete:
+      tags:
+        - default
+      summary: DeleteTask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+    put:
+      tags:
+        - default
+      summary: UpdateTask
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Task'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+  /api/todo-list/tasks/{id}/done:
+    patch:
+      tags:
+        - default
+      summary: MarkAsCompleted
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        title:
+          type: string
+          description: The title of the task
+          example: "Test task"
+        activeAt:
+          type: string
+          format: date
+          description: The date when the task should be activated
+          example: '2023-08-07'

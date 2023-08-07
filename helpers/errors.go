@@ -2,6 +2,7 @@ package helpers
 
 import "errors"
 
+// тут кастомные ошибки
 var (
 	ErrTodoExists          = errors.New("Задача с таким заголовком и датой уже существует")
 	ErrNotFound            = errors.New("Запись не найдена")

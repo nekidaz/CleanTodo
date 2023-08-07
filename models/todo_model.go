@@ -43,10 +43,14 @@ func (t *Todo) Validate() error {
 	if len(t.Title) > 200 {
 		return helpers.ErrTitleLengthExceeded
 	}
-	today := time.Now().Truncate(24 * time.Hour) // Обрезаем время, оставляя только дату
 
-	if t.ActiveAt.Before(today) {
+	// Get the current time in UTC and truncate it to the beginning of the day
+	now := time.Now().UTC().Truncate(24 * time.Hour)
+
+	// Compare the date part of ActiveAt with the current date
+	if t.ActiveAt.UTC().Truncate(24 * time.Hour).Before(now) {
 		return helpers.ErrDateNotCurrent
 	}
+
 	return nil
 }
