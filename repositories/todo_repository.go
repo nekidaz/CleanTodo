@@ -1,4 +1,4 @@
-// repositories.go
+// repositories.swaggerRouter
 
 package repositories
 

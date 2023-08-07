@@ -1,4 +1,4 @@
-// controllers.go
+// controllers.swaggerRouter
 
 package controllers
 
@@ -48,7 +48,7 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrTodoExists):
-			ctx.JSON(http.StatusConflict, gin.H{"error": "Task already exists"})
+			ctx.JSON(http.StatusNoContent, gin.H{"error": helpers.ErrAlreadyExist})
 		default:
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
@@ -56,7 +56,7 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, gin.H{"message": "Task with title " + todo.Title + "created successfully"})
+	ctx.JSON(http.StatusCreated, gin.H{"message": "Задача с заголовком: " + todo.Title + " успешно создана"})
 }
 
 func (c *TodoController) UpdateTodoHandler(ctx *gin.Context) {
@@ -121,7 +121,7 @@ func (c *TodoController) MarkAsCompletedHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusNoContent)
+	ctx.Status(http.StatusOK)
 }
 
 func (c *TodoController) GetTaskByID(ctx *gin.Context) {
@@ -131,6 +131,17 @@ func (c *TodoController) GetTaskByID(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, tasks[id])
+}
+
+func (c *TodoController) GetAllTasks(ctx *gin.Context) {
+	tasks, err := c.todoService.GetAllTasks(ctx)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch tasks"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, tasks)
 }
 
 func (c *TodoController) GetTasksByStatusHandler(ctx *gin.Context) {

@@ -24,7 +24,7 @@ services:
     image: mongo:latest
     container_name: my-mongodb
     ports:
-      - "27018:27017"
+      - 27017:${MONGO_PORT}
     volumes:
       - mongodb_data:/data/db
     environment:

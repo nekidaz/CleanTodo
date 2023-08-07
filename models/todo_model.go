@@ -1,4 +1,4 @@
-// models.go
+// models.swaggerRouter
 
 package models
 
@@ -39,15 +39,17 @@ func (t *Todo) Validate() error {
 		return helpers.ErrTitleEmpty
 	}
 
-	t.Title = strings.ReplaceAll(t.Title, " ", "")
-	if len(t.Title) > 200 {
+	//для проверки длинны
+	subTitile := strings.ReplaceAll(t.Title, " ", "")
+
+	if len(subTitile) > 200 {
 		return helpers.ErrTitleLengthExceeded
 	}
 
-	// Get the current time in UTC and truncate it to the beginning of the day
+	//чтобы мог создавать задачи на сегодня
 	now := time.Now().UTC().Truncate(24 * time.Hour)
 
-	// Compare the date part of ActiveAt with the current date
+	// проверка времени
 	if t.ActiveAt.UTC().Truncate(24 * time.Hour).Before(now) {
 		return helpers.ErrDateNotCurrent
 	}

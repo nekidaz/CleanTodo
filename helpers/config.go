@@ -12,7 +12,7 @@ type Config struct {
 }
 
 func ConfigSetup() (Config, error) {
-	dsn := fmt.Sprintf("mongodb://%s:27017", os.Getenv("MONGO_HOST"))
+	dsn := fmt.Sprintf("mongodb://%s:%s", os.Getenv("MONGO_HOST"), os.Getenv("MONGO_PORT"))
 	config := Config{
 		DBConnectionString: dsn,
 		DBName:             os.Getenv("MONGO_NAME"),

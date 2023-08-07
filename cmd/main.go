@@ -41,16 +41,18 @@ func main() {
 	// Создание маршрутов и запуск сервера
 	r := gin.Default()
 
-	r.GET("/api/todo-list/tasks/:ID", todoController.GetTaskByID)
-	r.GET("/api/todo-list/tasks", todoController.GetTasksByStatusHandler)
+	api := r.Group("/api/todo-list")
 
-	r.POST("/api/todo-list/tasks", todoController.CreateNewTodoHandler)
+	{
+		api.GET("/tasks/:ID", todoController.GetTaskByID)
+		api.GET("/tasks", todoController.GetTasksByStatusHandler)
+		api.GET("/tasks/all", todoController.GetAllTasks)
 
-	r.DELETE("/api/todo-list/tasks/:ID", todoController.DeleteTodoHandler)
+		api.POST("/tasks", todoController.CreateNewTodoHandler)
+		api.DELETE("/tasks/:ID", todoController.DeleteTodoHandler)
+		api.PUT("/tasks/:ID", todoController.UpdateTodoHandler)
+		api.PATCH("/tasks/:ID/done", todoController.MarkAsCompletedHandler)
 
-	r.PUT("/api/todo-list/tasks/:ID", todoController.UpdateTodoHandler)
-
-	r.PATCH("/api/todo-list/tasks/:ID/done", todoController.MarkAsCompletedHandler)
-
-	r.Run(":8080")
+		r.Run(":8080")
+	}
 }

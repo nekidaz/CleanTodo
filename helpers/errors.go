@@ -13,4 +13,5 @@ var (
 	ErrParseActiveAt       = errors.New("Не удалось преобразовать ActiveAt")
 	ErrInvalidID           = errors.New("Неверный ID")
 	ErrTaskNotFound        = errors.New("Задача не найдена")
+	ErrAlreadyExist        = errors.New("Task already exists")
 )
