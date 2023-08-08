@@ -17,7 +17,7 @@ services:
       MONGO_COLLECTION: ${MONGO_COLLECTION}
 
     env_file:
-      - .env
+      - config/.env
 
 
   mongo:
