@@ -222,7 +222,7 @@ func (r *repository) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
 	filter := bson.M{}
 
 	// Получаем список всех задач
-	cursor, err := r.collection.Find(ctx, filter, options.Find().SetSort(bson.M{"created_at": 1}))
+	cursor, err := r.collection.Find(ctx, filter, options.Find().SetSort(bson.M{"active_at": 1}))
 	if err != nil {
 		return nil, err
 	}
