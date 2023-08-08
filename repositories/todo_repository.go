@@ -55,7 +55,6 @@ func NewRepository(connectionString, dbName, collectionName string) (TodoReposit
 }
 
 func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*models.Todo, error) {
-	// Валидация данных
 	if err := todo.Validate(); err != nil {
 		return nil, err
 	}
@@ -75,7 +74,6 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 		return nil, helpers.ErrTodoExists
 	}
 
-	// Добавление новой задачи в базу данных
 	todo.CreatedAt = time.Now()
 	todo.UpdatedAt = time.Now()
 
@@ -94,7 +92,6 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 }
 
 func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo *models.Todo) (*models.Todo, error) {
-	// Валидация данных
 	if err := todo.Validate(); err != nil {
 		return nil, err
 	}
@@ -120,7 +117,6 @@ func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo
 		return nil, helpers.ErrNotFound
 	}
 
-	// Обновление задачи в базе данных
 	todo.ID = id
 	todo.CreatedAt = existingTodo.CreatedAt
 	todo.UpdatedAt = time.Now()
@@ -138,13 +134,11 @@ func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo
 }
 
 func (r *repository) DeleteTodo(ctx context.Context, id primitive.ObjectID) error {
-	// Проверка существования задачи по ID
 	_, err := r.GetTaskByID(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	// Удаление задачи из базы данных
 	_, err = r.collection.DeleteOne(ctx, bson.M{"_id": id})
 	if err != nil {
 		return err
@@ -154,7 +148,6 @@ func (r *repository) DeleteTodo(ctx context.Context, id primitive.ObjectID) erro
 }
 
 func (r *repository) MarkAsCompleted(ctx context.Context, id primitive.ObjectID) error {
-	// Проверка существования задачи по ID
 	existingTodo, err := r.GetTaskByID(ctx, id)
 	if err != nil {
 		return err
@@ -218,7 +211,6 @@ func (r *repository) GetTaskByID(ctx context.Context, id primitive.ObjectID) (*m
 }
 
 func (r *repository) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
-	// Определяем фильтр для получения всех задач
 	filter := bson.M{}
 
 	// Получаем список всех задач
