@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-
   app:
     container_name: backend-container
     restart: always
@@ -17,7 +16,7 @@ services:
       MONGO_COLLECTION: ${MONGO_COLLECTION}
 
     env_file:
-      - config/.env
+      - .env
 
 
   mongo:
@@ -30,18 +29,22 @@ services:
     environment:
       MONGO_NAME: ${MONGO_NAME}
       MONGO_COLLECTION: ${MONGO_COLLECTION}
+    env_file:
+      - .env
 
-  integration:
+  integration-tests:
     build:
       context: .
-      dockerfile: tests/integration_tests/Dockerfile
-    container_name: integration
+      dockerfile: integration-tests/Dockerfile
     depends_on:
-      - app
       - mongo
-    volumes:
-        - ./tests/integration_tests:/app/tests/integration_tests
-    command: [ "go", "test", "./tests/integration_tests" ]
+    environment:
+      MONGO_NAME: ${MONGO_NAME}
+      MONGO_HOST: ${MONGO_HOST}
+      MONGO_PORT: ${MONGO_PORT}
+      MONGO_COLLECTION: ${MONGO_COLLECTION}
+    env_file:
+      .env
 
 
 volumes:

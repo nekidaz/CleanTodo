@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"github.com/nekidaz/todolist/internal/entity"
+	"github.com/nekidaz/todolist/internal/usecase/services"
 	errors2 "github.com/nekidaz/todolist/pkg/errors"
 	"net/http"
 	"strconv"
@@ -12,10 +13,10 @@ import (
 )
 
 type TodoController struct {
-	todoService service.TodoService
+	todoService services.TodoService
 }
 
-func NewTodoController(todoService service.TodoService) *TodoController {
+func NewTodoController(todoService services.TodoService) *TodoController {
 	return &TodoController{
 		todoService: todoService,
 	}

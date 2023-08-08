@@ -1,4 +1,4 @@
-package unit_tests
+package entity_test
 
 import (
 	"github.com/nekidaz/todolist/internal/entity"

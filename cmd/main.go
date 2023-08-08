@@ -5,6 +5,7 @@ import (
 	"github.com/nekidaz/todolist/config"
 	"github.com/nekidaz/todolist/internal/controllers"
 	"github.com/nekidaz/todolist/internal/usecase/repo"
+	"github.com/nekidaz/todolist/internal/usecase/services"
 	"log"
 )
 
@@ -22,7 +23,7 @@ func main() {
 	}
 
 	// Создание сервиса и контроллера
-	todoService := service.NewTodoService(repo)
+	todoService := services.NewTodoService(repo)
 	todoController := controllers.NewTodoController(todoService)
 
 	// Создание маршрутов и запуск сервера
