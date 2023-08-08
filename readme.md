@@ -1,5 +1,5 @@
 
-# CleanTodo App
+# CleanTodo 
 
 ### Вместо Swagger использовал [Postman](https://documenter.getpostman.com/view/24551580/2s9XxztCKj) - Импортируйте Коллекцию 
 
