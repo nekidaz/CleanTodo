@@ -31,6 +31,18 @@ services:
       MONGO_NAME: ${MONGO_NAME}
       MONGO_COLLECTION: ${MONGO_COLLECTION}
 
+  integration:
+    build:
+      context: .
+      dockerfile: tests/integration_tests/Dockerfile
+    container_name: integration
+    depends_on:
+      - app
+      - mongo
+    volumes:
+        - ./tests/integration_tests:/app/tests/integration_tests
+    command: [ "go", "test", "./tests/integration_tests" ]
+
 
 volumes:
   mongodb_data:

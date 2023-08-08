@@ -1,9 +1,7 @@
-// models.swaggerRouter
-
-package models
+package entity
 
 import (
-	"RegionLabTZ/helpers"
+	"github.com/nekidaz/todolist/pkg/errors"
 	"strings"
 	"time"
 
@@ -36,14 +34,14 @@ func (t *Todo) MarkAsCompleted() {
 
 func (t *Todo) Validate() error {
 	if t.Title == "" {
-		return helpers.ErrTitleEmpty
+		return errors.ErrTitleEmpty
 	}
 
 	//для проверки длинны
 	subTitile := strings.ReplaceAll(t.Title, " ", "")
 
 	if len(subTitile) > 200 {
-		return helpers.ErrTitleLengthExceeded
+		return errors.ErrTitleLengthExceeded
 	}
 
 	//чтобы мог создавать задачи на сегодня
@@ -51,7 +49,7 @@ func (t *Todo) Validate() error {
 
 	// проверка времени
 	if t.ActiveAt.UTC().Truncate(24 * time.Hour).Before(now) {
-		return helpers.ErrDateNotCurrent
+		return errors.ErrDateNotCurrent
 	}
 
 	return nil

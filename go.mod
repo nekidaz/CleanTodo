@@ -1,4 +1,4 @@
-module RegionLabTZ
+module github.com/nekidaz/todolist
 
 go 1.19
 

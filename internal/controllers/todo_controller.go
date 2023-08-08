@@ -1,10 +1,9 @@
 package controllers
 
 import (
-	"RegionLabTZ/helpers"
-	"RegionLabTZ/models"
-	service "RegionLabTZ/services"
 	"errors"
+	"github.com/nekidaz/todolist/internal/entity"
+	errors2 "github.com/nekidaz/todolist/pkg/errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -36,7 +35,7 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 	// тут парсим ибо формат не такой получаем как в тз
 	activeAtTime, err := time.Parse("2006-01-02", requestBody.ActiveAt)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrParseActiveAt})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errors2.ErrParseActiveAt})
 		return
 	}
 
@@ -45,8 +44,8 @@ func (c *TodoController) CreateNewTodoHandler(ctx *gin.Context) {
 
 	if err != nil {
 		switch {
-		case errors.Is(err, helpers.ErrTodoExists):
-			ctx.JSON(http.StatusNoContent, gin.H{"error": helpers.ErrAlreadyExist})
+		case errors.Is(err, errors2.ErrTodoExists):
+			ctx.JSON(http.StatusNoContent, gin.H{"error": errors2.ErrAlreadyExist})
 		default:
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
@@ -76,7 +75,7 @@ func (c *TodoController) UpdateTodoHandler(ctx *gin.Context) {
 
 	activeAtTime, err := time.Parse("2006-01-02", requestBody.ActiveAt)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrParseActiveAt})
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": errors2.ErrParseActiveAt})
 		return
 	}
 
@@ -172,12 +171,12 @@ func (c *TodoController) GetTasksByStatusHandler(ctx *gin.Context) {
 }
 
 // это для того чтобы получать данные в виде массива так как выполнять разные операции будет легчо выполнять по айдишкику в массиве
-func (c *TodoController) processRequestID(ctx *gin.Context) (id int, tasks []*models.Todo, errReturned bool) {
+func (c *TodoController) processRequestID(ctx *gin.Context) (id int, tasks []*entity.Todo, errReturned bool) {
 	idStr := ctx.Param("ID")
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
-		defer ctx.JSON(http.StatusBadRequest, gin.H{"error": helpers.ErrInvalidID})
+		defer ctx.JSON(http.StatusBadRequest, gin.H{"error": errors2.ErrInvalidID})
 		return 0, nil, true
 	}
 
@@ -190,7 +189,7 @@ func (c *TodoController) processRequestID(ctx *gin.Context) (id int, tasks []*mo
 	}
 
 	if id < 0 || id >= len(tasks) {
-		defer ctx.JSON(http.StatusNotFound, gin.H{"error": helpers.ErrTaskNotFound})
+		defer ctx.JSON(http.StatusNotFound, gin.H{"error": errors2.ErrTaskNotFound})
 		return 0, nil, true
 	}
 

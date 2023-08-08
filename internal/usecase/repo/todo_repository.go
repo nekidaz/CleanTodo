@@ -1,11 +1,11 @@
 // repositories.swaggerRouter
 
-package repositories
+package repo
 
 import (
-	"RegionLabTZ/helpers"
-	"RegionLabTZ/models"
 	"context"
+	"github.com/nekidaz/todolist/internal/entity"
+	"github.com/nekidaz/todolist/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,13 +14,13 @@ import (
 )
 
 type TodoRepository interface {
-	CreateNewTodo(ctx context.Context, todo *models.Todo) (*models.Todo, error)
-	UpdateTodo(ctx context.Context, id primitive.ObjectID, todo *models.Todo) (*models.Todo, error)
+	CreateNewTodo(ctx context.Context, todo *entity.Todo) (*entity.Todo, error)
+	UpdateTodo(ctx context.Context, id primitive.ObjectID, todo *entity.Todo) (*entity.Todo, error)
 	DeleteTodo(ctx context.Context, id primitive.ObjectID) error
 	MarkAsCompleted(ctx context.Context, id primitive.ObjectID) error
-	GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error)
-	GetAllTasks(ctx context.Context) ([]*models.Todo, error)
-	GetTaskByID(ctx context.Context, id primitive.ObjectID) (*models.Todo, error)
+	GetTasksByStatus(ctx context.Context, status string) ([]*entity.Todo, error)
+	GetAllTasks(ctx context.Context) ([]*entity.Todo, error)
+	GetTaskByID(ctx context.Context, id primitive.ObjectID) (*entity.Todo, error)
 	Close() error
 }
 
@@ -54,7 +54,7 @@ func NewRepository(connectionString, dbName, collectionName string) (TodoReposit
 	}, nil
 }
 
-func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*models.Todo, error) {
+func (r *repository) CreateNewTodo(ctx context.Context, todo *entity.Todo) (*entity.Todo, error) {
 	if err := todo.Validate(); err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 	}
 
 	if count > 0 {
-		return nil, helpers.ErrTodoExists
+		return nil, errors.ErrTodoExists
 	}
 
 	todo.CreatedAt = time.Now()
@@ -84,14 +84,14 @@ func (r *repository) CreateNewTodo(ctx context.Context, todo *models.Todo) (*mod
 
 	insertedID, ok := result.InsertedID.(primitive.ObjectID)
 	if !ok {
-		return nil, helpers.ErrFailedToGetRecordID
+		return nil, errors.ErrFailedToGetRecordID
 	}
 
 	todo.ID = insertedID
 	return todo, nil
 }
 
-func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo *models.Todo) (*models.Todo, error) {
+func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo *entity.Todo) (*entity.Todo, error) {
 	if err := todo.Validate(); err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (r *repository) UpdateTodo(ctx context.Context, id primitive.ObjectID, todo
 	}
 
 	if count > 0 {
-		return nil, helpers.ErrNotFound
+		return nil, errors.ErrNotFound
 	}
 
 	todo.ID = id
@@ -171,7 +171,7 @@ func (r *repository) MarkAsCompleted(ctx context.Context, id primitive.ObjectID)
 	return nil
 }
 
-func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error) {
+func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*entity.Todo, error) {
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
 
@@ -189,7 +189,7 @@ func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*mo
 	}
 	defer cursor.Close(ctx)
 
-	var todos []*models.Todo
+	var todos []*entity.Todo
 	if err = cursor.All(ctx, &todos); err != nil {
 		return nil, err
 	}
@@ -198,19 +198,19 @@ func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*mo
 }
 
 // Вспомогательный метод для поиска задачи по ID
-func (r *repository) GetTaskByID(ctx context.Context, id primitive.ObjectID) (*models.Todo, error) {
-	var todo models.Todo
+func (r *repository) GetTaskByID(ctx context.Context, id primitive.ObjectID) (*entity.Todo, error) {
+	var todo entity.Todo
 	err := r.collection.FindOne(ctx, bson.M{"_id": id}).Decode(&todo)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return nil, helpers.ErrNotFound
+			return nil, errors.ErrNotFound
 		}
 		return nil, err
 	}
 	return &todo, nil
 }
 
-func (r *repository) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
+func (r *repository) GetAllTasks(ctx context.Context) ([]*entity.Todo, error) {
 	filter := bson.M{}
 
 	// Получаем список всех задач
@@ -220,9 +220,9 @@ func (r *repository) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
 	}
 	defer cursor.Close(ctx)
 
-	var todos []*models.Todo
+	var todos []*entity.Todo
 	for cursor.Next(ctx) {
-		var todo models.Todo
+		var todo entity.Todo
 		if err := cursor.Decode(&todo); err != nil {
 			return nil, err
 		}

@@ -1,22 +1,21 @@
 package main
 
 import (
-	"RegionLabTZ/controllers"
-	"RegionLabTZ/helpers"
-	"RegionLabTZ/repositories"
-	service "RegionLabTZ/services"
 	"github.com/gin-gonic/gin"
+	"github.com/nekidaz/todolist/config"
+	"github.com/nekidaz/todolist/internal/controllers"
+	"github.com/nekidaz/todolist/internal/usecase/repo"
 	"log"
 )
 
 func main() {
 
-	config, err := helpers.ConfigSetup()
+	config, err := config.ConfigSetup()
 	if err != nil {
 		log.Fatalf("Ошибка при настройке конфигурации: %s", err)
 	}
 
-	repo, err := repositories.NewRepository(config.DBConnectionString, config.DBName, config.CollectionName)
+	repo, err := repo.NewRepository(config.DBConnectionString, config.DBName, config.CollectionName)
 
 	if err != nil {
 		log.Fatalf("Ошибка при подключении к MongoDB: %v", err)
