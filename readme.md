@@ -1,5 +1,5 @@
 
-# Todo App
+# CleanTodo App
 
 ### Вместо Swagger использовал [Postman](https://documenter.getpostman.com/view/24551580/2s9XxztCKj) - Импортируйте Коллекцию 
 
@@ -15,8 +15,8 @@
 2. Клонируйте репозиторий:
 
    ```sh
-   git clone https://github.com/yourusername/todo-app.git
-   cd todo-app
+   git clone https://github.com/nekidaz/CleanTodo.git
+   cd CleanTodo
    ```
 
 3. Запустите контейнеры с помощью Docker Compose:
