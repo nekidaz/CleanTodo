@@ -6,7 +6,6 @@ import (
 	"RegionLabTZ/helpers"
 	"RegionLabTZ/models"
 	"context"
-	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -22,6 +21,7 @@ type TodoRepository interface {
 	GetTasksByStatus(ctx context.Context, status string) ([]*models.Todo, error)
 	GetAllTasks(ctx context.Context) ([]*models.Todo, error)
 	GetTaskByID(ctx context.Context, id primitive.ObjectID) (*models.Todo, error)
+	Close() error
 }
 
 type repository struct {
@@ -186,7 +186,7 @@ func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*mo
 	if status == "done" {
 		filter = bson.M{"completed": true}
 	} else {
-		// Get tasks that are not completed and have activeAt <= today
+		// Получить задачи, которые не завершены и имеют activeAt <= today
 		filter = bson.M{"completed": false, "active_at": bson.M{"$lte": today}}
 	}
 
@@ -199,11 +199,6 @@ func (r *repository) GetTasksByStatus(ctx context.Context, status string) ([]*mo
 	var todos []*models.Todo
 	if err = cursor.All(ctx, &todos); err != nil {
 		return nil, err
-	}
-
-	// Print the tasks to check them.
-	for _, todo := range todos {
-		fmt.Printf("Fetched task: %+v\n", todo)
 	}
 
 	return todos, nil
@@ -243,4 +238,16 @@ func (r *repository) GetAllTasks(ctx context.Context) ([]*models.Todo, error) {
 	}
 
 	return todos, nil
+}
+
+func (r *repository) Close() error {
+	if r.client != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		if err := r.client.Disconnect(ctx); err != nil {
+			return err
+		}
+	}
+	return nil
 }

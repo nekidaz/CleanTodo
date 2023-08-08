@@ -33,12 +33,12 @@ func setup() {
 	var err error
 	pool, err = dockertest.NewPool("")
 	if err != nil {
-		log.Fatalf("Could not connect to Docker: %s", err)
+		log.Fatalf("Не может подключится к докеру: %s", err)
 	}
 
 	container, err = pool.Run("mongo", "4.4", nil)
 	if err != nil {
-		log.Fatalf("Could not start MongoDB container: %s", err)
+		log.Fatalf("Гем может запустить контейнер : %s", err)
 	}
 
 	if err := pool.Retry(func() error {
@@ -56,14 +56,14 @@ func setup() {
 
 		return client.Ping(context.Background(), nil)
 	}); err != nil {
-		log.Fatalf("Could not connect to MongoDB: %s", err)
+		log.Fatalf("Ошибка подключения к бд: %s", err)
 	}
 }
 
 // удаление конейнера
 func teardown() {
 	if err := pool.Purge(container); err != nil {
-		log.Fatalf("Could not purge MongoDB container: %s", err)
+		log.Fatalf("Ошибка удаления конейнера: %s", err)
 	}
 }
 
@@ -81,7 +81,7 @@ func TestCreateAndRetrieveTodos(t *testing.T) {
 
 		createdTodo, err := repo.CreateNewTodo(context.Background(), newTodo)
 		if err != nil {
-			t.Fatalf("Failed to create new task: %s", err)
+			t.Fatalf("Ошибка создания задачи : %s", err)
 		}
 		todos[i] = createdTodo
 	}
@@ -89,7 +89,7 @@ func TestCreateAndRetrieveTodos(t *testing.T) {
 	for _, createdTodo := range todos {
 		retrievedTodo, err := repo.GetTaskByID(context.Background(), createdTodo.ID)
 		if err != nil {
-			t.Fatalf("Failed to retrieve task from database: %s", err)
+			t.Fatalf("Не удалось получить задачу из базы данных: %s", err)
 		}
 
 		assert.Equal(t, createdTodo.Title, retrievedTodo.Title)
@@ -109,7 +109,7 @@ func TestUpdateTodo(t *testing.T) {
 	}
 	createdTodo, err := repo.CreateNewTodo(ctx, newTodo)
 	if err != nil {
-		t.Fatalf("Failed to create new task: %s", err)
+		t.Fatalf("Не удалось создать новую задачу: %s", err)
 	}
 
 	updatedTodo := &models.Todo{
@@ -120,12 +120,12 @@ func TestUpdateTodo(t *testing.T) {
 	}
 	_, err = repo.UpdateTodo(ctx, updatedTodo.ID, updatedTodo)
 	if err != nil {
-		t.Fatalf("Failed to update task: %s", err)
+		t.Fatalf("Не удалось пометить задачу как выполненную : %s", err)
 	}
 
 	retrievedTodo, err := repo.GetTaskByID(ctx, createdTodo.ID)
 	if err != nil {
-		t.Fatalf("Failed to retrieve task from database: %s", err)
+		t.Fatalf("Не удалось получить задачу из базы данны: %s", err)
 	}
 
 	assert.Equal(t, updatedTodo.Title, retrievedTodo.Title)
@@ -144,16 +144,16 @@ func TestDeleteTodo(t *testing.T) {
 	}
 	createdTodo, err := repo.CreateNewTodo(ctx, newTodo)
 	if err != nil {
-		t.Fatalf("Failed to create new task: %s", err)
+		t.Fatalf("Не удалось создать новую задачу: %s", err)
 	}
 
 	err = repo.DeleteTodo(ctx, createdTodo.ID)
 	if err != nil {
-		t.Fatalf("Failed to delete task: %s", err)
+		t.Fatalf("Не удалось удалить задачу: %s", err)
 	}
 
 	_, err = repo.GetTaskByID(ctx, createdTodo.ID)
-	assert.Error(t, err, "Expected error when retrieving deleted task")
+	assert.Error(t, err, "Ожидаемая ошибка при извлечении удаленной задачи")
 }
 
 // ну тут уже ждем ошибку
@@ -169,7 +169,7 @@ func TestUpdateTodo_ErrorNotFound(t *testing.T) {
 	}
 	_, err := repo.UpdateTodo(ctx, updatedTodo.ID, updatedTodo)
 
-	assert.NotNil(t, err, "Expected error for updating non-existent task")
+	assert.NotNil(t, err, "Ожидаемая ошибка при обновлении несуществующей задачи")
 }
 
 // также ожидаем ошибку
@@ -183,7 +183,7 @@ func TestUpdateTodo_ErrorValidation(t *testing.T) {
 	}
 	createdTodo, err := repo.CreateNewTodo(ctx, newTodo)
 	if err != nil {
-		t.Fatalf("Failed to create new task: %s", err)
+		t.Fatalf("Не удалось создать новую задачу: %s", err)
 	}
 
 	updatedTodo := &models.Todo{
@@ -194,7 +194,7 @@ func TestUpdateTodo_ErrorValidation(t *testing.T) {
 	}
 	_, err = repo.UpdateTodo(ctx, updatedTodo.ID, updatedTodo)
 
-	assert.NotNil(t, err, "Expected error for updating task with invalid data")
+	assert.NotNil(t, err, "Ожидаемая ошибка при обновлении задачи с недопустимыми данными")
 }
 
 // удалем то чего нет и ожидаем ошибку
@@ -204,5 +204,5 @@ func TestDeleteTodo_ErrorNotFound(t *testing.T) {
 	nonExistentID, _ := primitive.ObjectIDFromHex("603f650f8b20bd000e1b857a") // Non-existent ID
 	err := repo.DeleteTodo(ctx, nonExistentID)
 
-	assert.NotNil(t, err, "Expected error for deleting non-existent task")
+	assert.NotNil(t, err, "Ожидаемая ошибка при удалении несуществующей задачи")
 }

@@ -6,32 +6,20 @@ import (
 	"RegionLabTZ/repositories"
 	service "RegionLabTZ/services"
 	"github.com/gin-gonic/gin"
-	_ "github.com/swaggo/swag/example/basic/docs"
 	"log"
 )
-
-var config helpers.Config
-var err error
-
-func init() {
-
-	config, err = helpers.ConfigSetup()
-
-	if err != nil {
-		log.Fatalf("Error setting up configuration: %s", err)
-	}
-}
 
 func main() {
 
 	config, err := helpers.ConfigSetup()
 	if err != nil {
-		log.Fatalf("Error setting up configuration: %s", err)
+		log.Fatalf("Ошибка при настройке конфигурации: %s", err)
 	}
+
 	repo, err := repositories.NewRepository(config.DBConnectionString, config.DBName, config.CollectionName)
 
 	if err != nil {
-		log.Fatalf("Error connecting to MongoDB: %v", err)
+		log.Fatalf("Ошибка при подключении к MongoDB: %v", err)
 	}
 
 	// Создание сервиса и контроллера
@@ -53,6 +41,7 @@ func main() {
 		api.PUT("/tasks/:ID", todoController.UpdateTodoHandler)
 		api.PATCH("/tasks/:ID/done", todoController.MarkAsCompletedHandler)
 
-		r.Run(":8080")
 	}
+
+	r.Run(":8080")
 }

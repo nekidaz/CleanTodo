@@ -1,5 +1,3 @@
-// controllers.swaggerRouter
-
 package controllers
 
 import (
@@ -105,7 +103,7 @@ func (c *TodoController) DeleteTodoHandler(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusNoContent)
+	ctx.Status(http.StatusOK)
 }
 
 func (c *TodoController) MarkAsCompletedHandler(ctx *gin.Context) {

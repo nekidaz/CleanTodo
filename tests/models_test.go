@@ -9,7 +9,7 @@ import (
 )
 
 func TestCreateTodo(t *testing.T) {
-	activationTime := time.Now().Add(time.Hour * 24) // Set activation for 24 hours from now
+	activationTime := time.Now().Add(time.Hour * 24)
 	title := "Test Todo"
 	todo := models.NewTodo(title, activationTime)
 
