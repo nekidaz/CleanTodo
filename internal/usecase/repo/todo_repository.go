@@ -1,16 +1,16 @@
-// repositories.swaggerRouter
-
 package repo
 
 import (
 	"context"
+	"time"
+
+	"github.com/nekidaz/todolist/config"
 	"github.com/nekidaz/todolist/internal/entity"
 	"github.com/nekidaz/todolist/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type TodoRepository interface {
@@ -30,9 +30,9 @@ type repository struct {
 	collection *mongo.Collection
 }
 
-func NewRepository(connectionString, dbName, collectionName string) (TodoRepository, error) {
+func NewRepository(config config.Config) (TodoRepository, error) {
 	// Подключение к MongoDB
-	clientOptions := options.Client().ApplyURI(connectionString)
+	clientOptions := options.Client().ApplyURI(config.DBConnectionString)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		return nil, err
@@ -44,8 +44,8 @@ func NewRepository(connectionString, dbName, collectionName string) (TodoReposit
 		return nil, err
 	}
 
-	database := client.Database(dbName)
-	collection := database.Collection(collectionName)
+	database := client.Database(config.DBName)
+	collection := database.Collection(config.CollectionName)
 
 	return &repository{
 		client:     client,

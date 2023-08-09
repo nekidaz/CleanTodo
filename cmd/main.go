@@ -16,7 +16,7 @@ func main() {
 		log.Fatalf("Ошибка при настройке конфигурации: %s", err)
 	}
 
-	repo, err := repo.NewRepository(config.DBConnectionString, config.DBName, config.CollectionName)
+	repo, err := repo.NewRepository(config)
 
 	if err != nil {
 		log.Fatalf("Ошибка при подключении к MongoDB: %v", err)
