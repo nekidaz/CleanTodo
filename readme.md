@@ -1,11 +1,8 @@
 
 # CleanTodo 
 
-### Вместо Swagger использовал [Postman](https://documenter.getpostman.com/view/24551580/2s9XxztCKj) - Импортируйте Коллекцию 
 
-Простое приложение для управления задачами (Todo List).
-
-
+Простой сервис для управления задачами (Todo List).
 
 
 ## Запуск приложения
